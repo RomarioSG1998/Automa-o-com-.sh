@@ -1,0 +1,6 @@
+# IDE / Editor
+.idea/
+
+# Arquivos temporários
+*.tmp
+*.log

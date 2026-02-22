@@ -11,7 +11,7 @@ Este guia contém as instruções para acessar e testar as automações em seu l
 * **Usuário**: `rgaldino`
 * **IP**: `10.0.0.102`
 * **Porta**: `2244`
-* **Senha (Sudo)**: `145869`
+* **Senha (Sudo)**: *(não compartilhe senhas em repositórios públicos)*
 ```bash
 ssh -p 2244 rgaldino@10.0.0.102
 ```
@@ -22,7 +22,7 @@ ssh -p 2244 rgaldino@10.0.0.102
 * **Hostname**: `rgaldinocapstonecliente`
 * **Usuário**: `rgaldino_capstone_cliente`
 * **IP**: `10.0.0.127`
-* **Senha**: `145869`
+* **Senha**: *(não compartilhe senhas em repositórios públicos)*
 ```bash
 ssh rgaldino_capstone_cliente@10.0.0.127
 ```
