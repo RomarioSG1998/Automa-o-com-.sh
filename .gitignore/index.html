@@ -1,0 +1,926 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LabFlash: Interview Ready - Capstone Edition</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Vue.js 3 CDN -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        [v-cloak] { display: none; }
+        .prose p { margin-bottom: 1rem; }
+        
+        /* Estilo dos Tooltips Interativos */
+        .tooltip-container {
+            position: relative;
+            display: inline-block;
+        }
+        .tooltip-text {
+            visibility: hidden;
+            width: 240px;
+            background-color: #1e293b;
+            color: #fff;
+            text-align: center;
+            border-radius: 12px;
+            padding: 12px;
+            position: absolute;
+            z-index: 100;
+            bottom: 130%;
+            left: 50%;
+            margin-left: -120px;
+            opacity: 0;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-size: 0.75rem;
+            line-height: 1.1rem;
+            pointer-events: none;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .tooltip-container:hover .tooltip-text {
+            visibility: visible;
+            opacity: 1;
+            transform: translateY(-5px);
+        }
+        .tooltip-text::after {
+            content: "";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            margin-left: -6px;
+            border-width: 6px;
+            border-style: solid;
+            border-color: #1e293b transparent transparent transparent;
+        }
+
+        /* Animação do Botão de Pressão */
+        @keyframes pulse-red {
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+            70% { transform: scale(1.05); box-shadow: 0 0 0 12px rgba(239, 68, 68, 0); }
+            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+        }
+        .panic-btn {
+            animation: pulse-red 2s infinite;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-900 font-sans selection:bg-indigo-100">
+    <div id="app" v-cloak>
+        <!-- Cabeçalho Fixo -->
+        <header class="bg-white/80 backdrop-blur-md border-b sticky top-0 z-50 shadow-sm">
+            <div class="max-w-6xl mx-auto px-4 py-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div class="flex items-center gap-3 cursor-pointer group" @click="resetState">
+                    <div class="p-2 bg-indigo-600 rounded-xl group-hover:rotate-12 transition-transform shadow-lg shadow-indigo-200">
+                        <i data-lucide="zap" class="text-white w-6 h-6"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-xl font-black tracking-tighter text-slate-800 leading-none">LabFlash</h1>
+                        <span class="text-[10px] font-bold text-indigo-500 uppercase tracking-widest">Midterm Edition</span>
+                    </div>
+                </div>
+                
+                <div class="relative flex-1 max-w-xl">
+                    <i data-lucide="search" class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5"></i>
+                    <input 
+                        type="text"
+                        placeholder="Pesquisar (ex: NFS, Sudoers, Docker, 600)..."
+                        class="w-full pl-12 pr-4 py-3 bg-slate-100 border-2 border-transparent rounded-2xl focus:bg-white focus:border-indigo-500 transition-all outline-none text-sm md:text-base shadow-inner"
+                        v-model="searchTerm"
+                    />
+                </div>
+
+                <button 
+                    @click="showPanicMode = !showPanicMode"
+                    class="flex items-center gap-2 px-5 py-2.5 bg-red-500 text-white rounded-xl font-bold text-xs uppercase tracking-wider hover:bg-red-600 transition-all shadow-lg shadow-red-200 panic-btn active:scale-95"
+                >
+                    <i data-lucide="shield-alert" class="w-4 h-4"></i>
+                    Modo de Pressão
+                </button>
+            </div>
+        </header>
+
+        <!-- Overlay do Modo de Pressão -->
+        <div v-if="showPanicMode" class="fixed inset-0 z-[100] bg-slate-900/95 backdrop-blur-md p-4 md:p-10 overflow-y-auto animate-in fade-in zoom-in-95 duration-200">
+            <div class="max-w-4xl mx-auto">
+                <div class="flex justify-between items-center mb-10 text-white text-left">
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 bg-red-500 rounded-2xl flex items-center justify-center">
+                            <i data-lucide="flame" class="w-8 h-8 text-white"></i>
+                        </div>
+                        <h2 class="text-3xl font-black uppercase tracking-tighter text-red-400">Guia de Sobrevivência</h2>
+                    </div>
+                    <button @click="showPanicMode = false" class="p-3 hover:bg-white/10 rounded-full transition-colors">
+                        <i data-lucide="x" class="w-8 h-8"></i>
+                    </button>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 text-left">
+                    <!-- Scripts Mentais -->
+                    <div class="bg-white/5 border border-white/10 p-8 rounded-[2rem]">
+                        <h3 class="text-indigo-400 text-lg font-bold mb-6 flex items-center gap-3">
+                            <i data-lucide="message-circle" class="w-6 h-6"></i> O que dizer quando travar
+                        </h3>
+                        <div class="space-y-6">
+                            <div class="bg-indigo-500/10 p-5 rounded-2xl border-l-4 border-indigo-500">
+                                <p class="text-xs font-bold text-indigo-300 uppercase mb-2">Esqueceu o comando?</p>
+                                <p class="text-slate-300 leading-relaxed italic">"Não recordo o parâmetro exacto agora, mas a minha lógica de administrador seria isolar o problema por camadas: Rede, Permissões e Serviço. Eu começaria por validar o status com systemctl ou os logs em /var/log."</p>
+                            </div>
+                            <div class="bg-emerald-500/10 p-5 rounded-2xl border-l-4 border-emerald-500">
+                                <p class="text-xs font-bold text-emerald-300 uppercase mb-2">Destaque profissional (IaC)</p>
+                                <p class="text-slate-300 leading-relaxed italic">"Neste projecto utilizei Shell Scripting para automação (IaC). Isso garante que o ambiente seja auditável e que possamos recuperar a infraestrutura sem erros humanos manuais."</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Checklist de Diagnóstico -->
+                    <div class="bg-white/5 border border-white/10 p-8 rounded-[2rem]">
+                        <h3 class="text-red-400 text-lg font-bold mb-6 flex items-center gap-3">
+                            <i data-lucide="activity" class="w-6 h-6"></i> Checklist de Diagnóstico
+                        </h3>
+                        <div class="space-y-4">
+                            <div class="flex gap-4 items-start p-4 bg-white/5 rounded-2xl">
+                                <span class="bg-red-500 text-white w-8 h-8 flex items-center justify-center rounded-lg font-bold shrink-0 shadow-lg shadow-red-500/20">1</span>
+                                <div>
+                                    <p class="text-white font-bold mb-1">Permissões (Security)</p>
+                                    <p class="text-slate-400 text-sm italic">"Verifico o owner/group com 'ls -l' e os bits octais (ex: 440 para sudoers ou 600 para rw exclusivo)."</p>
+                                </div>
+                            </div>
+                            <div class="flex gap-4 items-start p-4 bg-white/5 rounded-2xl">
+                                <span class="bg-red-500 text-white w-8 h-8 flex items-center justify-center rounded-lg font-bold shrink-0 shadow-lg shadow-red-500/20">2</span>
+                                <div>
+                                    <p class="text-white font-bold mb-1">Rede & NFS</p>
+                                    <p class="text-slate-400 text-sm italic">"Para o NFS, uso 'showmount -e [IP]' no cliente para ver o que o servidor está a exportar e 'df -h' para ver montagens."</p>
+                                </div>
+                            </div>
+                            <div class="flex gap-4 items-start p-4 bg-white/5 rounded-2xl">
+                                <span class="bg-red-500 text-white w-8 h-8 flex items-center justify-center rounded-lg font-bold shrink-0 shadow-lg shadow-red-500/20">3</span>
+                                <div>
+                                    <p class="text-white font-bold mb-1">Containers (Docker)</p>
+                                    <p class="text-slate-400 text-sm italic">"Verifico o mapeamento de portas (9090:80) e uso 'docker logs' para ver falhas no script de inicialização do MySQL."</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <main class="max-w-6xl mx-auto p-4 md:p-10">
+            <!-- Mapa Teórico -->
+            <section class="mb-10 bg-white rounded-[2rem] border border-slate-200 shadow-sm p-6 md:p-8">
+                <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+                    <div>
+                        <h2 class="text-xl md:text-2xl font-black tracking-tight text-slate-900">Mapa Teórico do Projeto</h2>
+                        <p class="text-slate-500 text-sm">Acesso rápido aos conceitos estudados em todas as atividades.</p>
+                    </div>
+                    <button
+                        @click="selectedConcept = null; searchTerm = ''; selectedLab = null"
+                        class="px-4 py-2 text-xs font-bold uppercase tracking-wider rounded-xl bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors"
+                    >
+                        Limpar foco
+                    </button>
+                </div>
+
+                <div class="flex flex-wrap gap-2 md:gap-3">
+                    <button
+                        v-for="concept in theoryConcepts"
+                        :key="concept.name"
+                        @click="openConcept(concept)"
+                        class="inline-flex items-center gap-2 px-3 py-2 rounded-xl border text-xs font-bold uppercase tracking-wider transition-all"
+                        :class="selectedConcept && selectedConcept.name === concept.name ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-slate-600 border-slate-200 hover:border-indigo-500 hover:text-indigo-600'"
+                    >
+                        <span>{{ concept.name }}</span>
+                        <span class="px-2 py-0.5 rounded-md text-[10px]" :class="selectedConcept && selectedConcept.name === concept.name ? 'bg-white/20' : 'bg-slate-100'">{{ concept.count }}</span>
+                    </button>
+                </div>
+
+                <div v-if="selectedConcept" class="mt-6 p-5 rounded-2xl bg-indigo-50 border border-indigo-100">
+                    <p class="text-[11px] font-black uppercase tracking-[0.2em] text-indigo-600 mb-2">Conceito selecionado</p>
+                    <h3 class="text-lg font-black text-indigo-900 mb-2">{{ selectedConcept.name }}</h3>
+                    <p class="text-indigo-800/80 text-sm leading-relaxed mb-4">{{ selectedConcept.definition }}</p>
+                    <div class="flex flex-wrap gap-2">
+                        <button
+                            v-for="title in selectedConcept.labs"
+                            :key="title"
+                            @click="openLabByTitle(title)"
+                            class="px-3 py-2 rounded-lg text-xs font-bold bg-white text-indigo-700 border border-indigo-200 hover:bg-indigo-100 transition-colors"
+                        >
+                            {{ title }}
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Grid de Módulos -->
+            <div v-if="!selectedLab">
+                <div v-if="filteredLabs.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <div 
+                        v-for="(lab, index) in filteredLabs" 
+                        :key="index"
+                        @click="selectLab(lab)"
+                        :class="['bg-white p-8 rounded-[2rem] border transition-all cursor-pointer group flex flex-col h-full text-left', lab.isCapstone ? 'border-indigo-500 ring-4 ring-indigo-50' : 'border-slate-200 hover:border-indigo-500 hover:shadow-2xl hover:-translate-y-1']"
+                    >
+                        <div class="flex justify-between items-start mb-6 text-left">
+                            <span :class="['text-[10px] font-black uppercase tracking-[0.2em] px-3 py-1.5 rounded-lg shadow-sm', lab.isCapstone ? 'text-white bg-indigo-600' : 'text-indigo-600 bg-indigo-50']">
+                                {{ lab.isCapstone ? 'Atividade Capstone' : 'Módulo Técnico' }}
+                            </span>
+                            <div class="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center group-hover:bg-indigo-600 transition-colors">
+                                <i data-lucide="arrow-right" class="w-5 h-5 text-slate-300 group-hover:text-white transition-all group-hover:translate-x-1"></i>
+                            </div>
+                        </div>
+                        <h2 class="text-2xl font-black mb-3 group-hover:text-indigo-600 transition-colors leading-tight text-left">
+                            {{ lab.title }}
+                        </h2>
+                        <p class="text-slate-500 text-sm line-clamp-3 mb-8 flex-grow leading-relaxed text-left">
+                            {{ lab.summary }}
+                        </p>
+                        <div class="flex flex-wrap gap-2 mt-auto text-left">
+                            <span v-for="tag in lab.keywords.slice(0, 3)" :key="tag.name" class="text-[10px] bg-slate-100 text-slate-500 px-2.5 py-1 rounded-md font-bold uppercase tracking-wider group-hover:bg-indigo-50 group-hover:text-indigo-600 transition-colors">
+                                {{ tag.name }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Visão Detalhada -->
+            <div v-else class="animate-in fade-in slide-in-from-bottom-8 duration-500 text-left">
+                <button 
+                    @click="selectedLab = null"
+                    class="flex items-center gap-3 text-slate-400 hover:text-indigo-600 mb-8 font-black uppercase text-xs tracking-widest transition-all group"
+                >
+                    <i data-lucide="arrow-left" class="w-5 h-5 group-hover:-translate-x-1 transition-transform text-left"></i> Voltar à Lista
+                </button>
+
+                <div class="bg-white rounded-[3rem] border border-slate-200 shadow-2xl overflow-hidden mb-12 text-left">
+                    <div :class="['p-10 md:p-14 text-white text-left', selectedLab.isCapstone ? 'bg-gradient-to-br from-indigo-700 via-indigo-600 to-indigo-800' : 'bg-indigo-600']">
+                        <div class="flex items-center gap-3 mb-4 opacity-70 text-sm font-bold uppercase tracking-[0.3em] text-left">
+                            <i :data-lucide="selectedLab.isCapstone ? 'award' : 'book-open'" class="w-5 h-5 text-left"></i> 
+                            {{ selectedLab.isCapstone ? 'Capstone Midterm Project' : 'Conceito Operacional' }}
+                        </div>
+                        <h2 class="text-4xl md:text-5xl font-black mb-8 leading-tight tracking-tighter text-left">{{ selectedLab.title }}</h2>
+                        <div class="flex flex-wrap gap-3 text-left">
+                            <div v-for="tag in selectedLab.keywords" :key="tag.name" class="tooltip-container text-left">
+                                <span class="bg-white/10 backdrop-blur-xl px-4 py-2 rounded-xl text-xs font-bold border border-white/20 cursor-help hover:bg-white/25 transition-all text-left">
+                                    #{{ tag.name }}
+                                </span>
+                                <span class="tooltip-text text-left">{{ tag.definition }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="p-8 md:p-14 grid grid-cols-1 lg:grid-cols-2 gap-12 md:gap-20 text-left">
+                        <div>
+                            <div class="flex items-center gap-3 mb-8 text-indigo-600 border-b-2 border-indigo-50 pb-4 text-left">
+                                <i data-lucide="terminal" class="w-6 h-6 text-left"></i>
+                                <h3 class="font-black text-xl uppercase tracking-tighter text-left">Resumo Técnico</h3>
+                            </div>
+                            <div class="prose prose-slate max-w-none text-slate-600 leading-relaxed whitespace-pre-line text-sm md:text-base text-left">
+                                {{ selectedLab.technicalContent }}
+                            </div>
+
+                            <div class="mt-12 p-8 bg-indigo-50 rounded-[2rem] border border-indigo-100 shadow-sm text-left">
+                                <h4 class="font-black text-indigo-900 mb-6 flex items-center gap-3 text-sm uppercase tracking-widest text-left">
+                                    <i data-lucide="message-square" class="w-5 h-5 text-left"></i> Simulação de Diálogo
+                                </h4>
+                                <ul class="space-y-6 text-left">
+                                    <li v-for="(q, idx) in selectedLab.interviewQuestions" :key="idx" class="text-left">
+                                        <p class="font-black text-indigo-800 mb-2 flex gap-2 text-left">
+                                            <span class="opacity-30 text-left">Q:</span> {{ q.question }}
+                                        </p>
+                                        <p class="text-indigo-600/80 italic pl-6 border-l-2 border-indigo-200 text-left">
+                                            {{ q.answer }}
+                                        </p>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="space-y-10 text-left">
+                            <div v-if="selectedLab.quickRun && selectedLab.quickRun.length" class="bg-indigo-50 p-8 rounded-[2.5rem] border border-indigo-100 text-left">
+                                <div class="flex items-center gap-3 mb-6 text-indigo-700 text-left">
+                                    <i data-lucide="rocket" class="w-6 h-6 text-left"></i>
+                                    <h3 class="font-black text-xl uppercase tracking-tighter text-left">Execução Rápida</h3>
+                                </div>
+                                <div class="space-y-3">
+                                    <div v-for="(step, idx) in selectedLab.quickRun" :key="step.title + idx" class="bg-white border border-indigo-100 rounded-2xl overflow-hidden">
+                                        <button
+                                            @click="toggleStep(idx)"
+                                            class="w-full flex items-center justify-between gap-3 p-4 text-left hover:bg-indigo-50 transition-colors"
+                                        >
+                                            <div class="flex items-start gap-3">
+                                                <span class="w-7 h-7 rounded-lg bg-indigo-600 text-white text-xs font-black flex items-center justify-center shrink-0 mt-0.5">{{ idx + 1 }}</span>
+                                                <div>
+                                                    <p class="text-indigo-900 font-black text-sm">{{ step.title }}</p>
+                                                    <p class="text-indigo-700/80 text-xs">{{ step.goal }}</p>
+                                                </div>
+                                            </div>
+                                            <i :data-lucide="expandedStep === idx ? 'chevron-up' : 'chevron-down'" class="w-5 h-5 text-indigo-500 shrink-0"></i>
+                                        </button>
+
+                                        <div v-if="expandedStep === idx" class="px-4 pb-4">
+                                            <div class="ml-10 space-y-3">
+                                                <div class="bg-slate-900 text-slate-100 p-3 rounded-xl text-xs font-mono leading-relaxed overflow-x-auto">
+                                                    {{ step.command }}
+                                                </div>
+                                                <button
+                                                    @click="copyCommand(step.command)"
+                                                    class="px-3 py-1.5 rounded-lg text-[11px] font-bold uppercase tracking-wider bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors"
+                                                >
+                                                    Copiar comando
+                                                </button>
+                                                <p class="text-slate-700 text-sm leading-relaxed">{{ step.explanation }}</p>
+                                                <p class="text-emerald-700 text-xs font-semibold">Validação: {{ step.validation }}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="bg-slate-50 p-8 rounded-[2.5rem] border border-slate-100 text-left">
+                                <div class="flex items-center gap-3 mb-6 text-emerald-600 text-left">
+                                    <i data-lucide="check-circle" class="w-6 h-6 text-left"></i>
+                                    <h3 class="font-black text-xl uppercase tracking-tighter text-left">Realização e Prática</h3>
+                                </div>
+                                <div class="space-y-4 text-left">
+                                    <div v-for="(aspect, idx) in selectedLab.practicalAspects" :key="idx" class="flex gap-4 bg-white p-5 rounded-2xl shadow-sm border border-slate-100 transition-all hover:scale-[1.02] text-left">
+                                        <div class="w-8 h-8 bg-emerald-100 text-emerald-600 rounded-lg flex items-center justify-center shrink-0 text-xs font-black text-left">
+                                            {{ idx + 1 }}
+                                        </div>
+                                        <p class="text-slate-700 text-sm leading-snug font-medium text-left text-left">{{ aspect }}</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="bg-amber-50 p-8 rounded-[2.5rem] border border-amber-100 relative overflow-hidden group text-left">
+                                <div class="flex items-center gap-3 mb-6 text-amber-600 relative z-10 text-left">
+                                    <i data-lucide="zap" class="w-6 h-6 fill-amber-600 text-left"></i>
+                                    <h3 class="font-black text-sm uppercase tracking-widest text-left">O Pulo do Gato</h3>
+                                </div>
+                                <p class="text-amber-900/80 text-base italic leading-relaxed relative z-10 font-medium text-left">{{ selectedLab.proTip }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const { createApp, ref, computed, nextTick } = Vue;
+
+        createApp({
+            setup() {
+                const showPanicMode = ref(false);
+                const searchTerm = ref('');
+                const selectedLab = ref(null);
+                const selectedConcept = ref(null);
+                const expandedStep = ref(0);
+
+                const labs = ref([
+                    {
+                        title: "Atividade 1: Hardening & SSH",
+                        isCapstone: true,
+                        summary: "Ubuntu 24.04 com SSH na porta 2244, mascaramento de socket systemd e firewall outbound (Egress Filtering).",
+                        keywords: [
+                            { name: "SSH 2244", definition: "Porta não-padrão para mitigar ataques automatizados de força bruta." },
+                            { name: "Mask Socket", definition: "Procedimento no Ubuntu 24.04: systemctl mask ssh.socket impede que o socket reinicie na porta 22." },
+                            { name: "Egress Port 8888", definition: "Configuração do firewall UFW para permitir tráfego de saída apenas em portas específicas." },
+                            { name: "NAT", definition: "Adaptador de rede para acesso externo usando tradução de endereços, comum em VMs." },
+                            { name: "Bridge", definition: "Adaptador de rede que coloca a VM na mesma rede do host, com IP visível na LAN." },
+                            { name: "UFW", definition: "Firewall simplificado do Ubuntu para regras de entrada e saída por porta/protocolo." },
+                            { name: "Security by Obscurity", definition: "Redução de ataque automatizado ao evitar padrões previsíveis, como SSH na porta 22." }
+                        ],
+                        quickRun: [
+                            {
+                                title: "Manual A1 - limpar porta SSH antiga",
+                                goal: "Executar exatamente o PASSO 1 do manual da atividade 1.",
+                                command: "sudo sed -i '/^Port /d' /etc/ssh/sshd_config",
+                                explanation: "Mesmo comando exibido no modo manual para remover configuração anterior de porta.",
+                                validation: "grep -n '^Port ' /etc/ssh/sshd_config"
+                            },
+                            {
+                                title: "Manual A1 - definir porta 2244",
+                                goal: "Executar o comando de porta exatamente como no guia.",
+                                command: "echo 'Port 2244' | sudo tee -a /etc/ssh/sshd_config",
+                                explanation: "Comando igual ao manual para adicionar a nova porta no arquivo do SSH.",
+                                validation: "grep -n '^Port 2244' /etc/ssh/sshd_config"
+                            },
+                            {
+                                title: "Manual A1 - desabilitar ssh.socket e reiniciar SSH",
+                                goal: "Aplicar sequência do Ubuntu 24.04+ mostrada no manual.",
+                                command: "sudo systemctl stop ssh.socket && sudo systemctl disable ssh.socket && sudo systemctl restart ssh",
+                                explanation: "Mesma sequência do guia manual para evitar conflito socket/service.",
+                                validation: "ss -tuln | grep 2244"
+                            },
+                            {
+                                title: "Manual A1 - criar usuário admin",
+                                goal: "Executar PASSO 2 do guia manual.",
+                                command: "sudo useradd -m -s /bin/bash admin && echo 'admin:admin123' | sudo chpasswd && sudo usermod -aG sudo admin",
+                                explanation: "Mesmos comandos do manual para criar admin, senha e grupo sudo.",
+                                validation: "groups admin"
+                            },
+                            {
+                                title: "Manual A1 - configurar UFW",
+                                goal: "Executar PASSO 3 do guia manual.",
+                                command: "sudo ufw default deny incoming && sudo ufw default deny outgoing && sudo ufw allow 2244/tcp && sudo ufw allow out 8888/tcp && sudo ufw enable",
+                                explanation: "Replica a política de firewall exatamente como exibida no script manual.",
+                                validation: "sudo ufw status verbose"
+                            }
+                        ],
+                        technicalContent: `Procedimento via Script:\n1. Porta: Editado /etc/ssh/sshd_config -> Port 2244.\n2. Systemd: sudo systemctl stop/mask ssh.socket.\n3. Firewall: sudo ufw default deny incoming/outgoing; allow out 8888/tcp.\n4. Admin: Criado usuário 'admin' no grupo sudo.`,
+                        practicalAspects: [
+                            "Provisionamento com 3GB RAM para garantir estabilidade em ambiente virtualizado.",
+                            "Resolução de conflito: o novo comportamento do Ubuntu 24.04 ignora o sshd_config se o socket estiver ativo.",
+                            "Validação de conectividade externa via porta customizada."
+                        ],
+                        proTip: "Ao falar de SSH, mencione o 'masking' do socket. É um conhecimento avançado de systemd que mostra domínio real do SO.",
+                        interviewQuestions: [
+                            { question: "Como verificou a porta aberta?", answer: "Utilizei 'ss -tuln | grep 2244' para confirmar o processo ouvinte." }
+                        ]
+                    },
+                    {
+                        title: "Atividade 2: IAM & Sudoers.d",
+                        isCapstone: true,
+                        summary: "Segregação departamental (IT/QA) via directório sudoers.d com permissões seguras (chmod 440).",
+                        keywords: [
+                            { name: "Sudoers.d", definition: "Pasta modular para privilégios sudo, evitando o risco de corromper o /etc/sudoers principal." },
+                            { name: "Privilégio Mínimo", definition: "Conceder apenas o binário necessário (ex: IT só mexe no apt)." },
+                            { name: "Permissão 440", definition: "Exigência de segurança: leitura apenas para root e grupo root." },
+                            { name: "Grupos Primário/Secundário", definition: "Modelo de permissões onde o grupo principal define ownership padrão e o secundário amplia acessos." },
+                            { name: "visudo -c", definition: "Comando de validação sintática para evitar travamento do sudo por erro em arquivos de regra." },
+                            { name: "useradd/usermod", definition: "Binários de administração de usuários usados no controle de acesso via sudoers." }
+                        ],
+                        quickRun: [
+                            {
+                                title: "Manual A2 - criar grupos",
+                                goal: "Executar PASSO 1 exatamente como no manual.",
+                                command: "sudo groupadd it && sudo groupadd qa",
+                                explanation: "Comandos iguais ao guia para criar os grupos it e qa.",
+                                validation: "getent group it qa"
+                            },
+                            {
+                                title: "Manual A2 - criar user1",
+                                goal: "Executar início do PASSO 2 do manual.",
+                                command: "sudo useradd -m -g it -s /bin/bash user1 && echo 'user1:password123' | sudo chpasswd",
+                                explanation: "Mesmo provisionamento descrito no manual para user1.",
+                                validation: "groups user1"
+                            },
+                            {
+                                title: "Manual A2 - criar user2 e grupo secundário",
+                                goal: "Completar PASSO 2 do manual.",
+                                command: "sudo useradd -m -g it -s /bin/bash user2 && sudo usermod -aG qa user2 && echo 'user2:password123' | sudo chpasswd",
+                                explanation: "Comandos idênticos ao guia para user2 com grupo secundário qa.",
+                                validation: "groups user2"
+                            },
+                            {
+                                title: "Manual A2 - sudoers it",
+                                goal: "Aplicar primeira regra do PASSO 3.",
+                                command: "echo '%it ALL=(ALL) /usr/bin/apt install, /usr/bin/apt remove, /usr/bin/apt purge' | sudo tee /etc/sudoers.d/it && sudo chmod 440 /etc/sudoers.d/it",
+                                explanation: "Regra e permissão exatamente como no manual.",
+                                validation: "sudo -U user1 -l | grep apt"
+                            },
+                            {
+                                title: "Manual A2 - sudoers qa",
+                                goal: "Aplicar segunda regra do PASSO 3.",
+                                command: "echo '%qa ALL=(ALL) /usr/sbin/useradd, /usr/sbin/usermod' | sudo tee /etc/sudoers.d/qa && sudo chmod 440 /etc/sudoers.d/qa",
+                                explanation: "Regra e permissão idênticas ao guia de execução manual.",
+                                validation: "sudo -U user2 -l | grep -E 'useradd|usermod'"
+                            }
+                        ],
+                        technicalContent: `IAM via Script:\n- Grupos: it (apt), qa (useradd).\n- Configuração: Ficheiros modulares com permissão 440.\n- Regra: %it ALL=(ALL) /usr/bin/apt install, remove, purge.\n- User2: Atribuído grupo primário IT e secundário QA.`,
+                        practicalAspects: [
+                            "Validação visual: User1 impedido de criar utilizadores (Permission Denied).",
+                            "Uso de 'chpasswd' em scripts para automação de senhas.",
+                            "Teste de sintaxe com 'visudo -c' antes de aplicar configurações."
+                        ],
+                        proTip: "O uso de sudoers.d é um padrão de Infraestrutura como Código (IaC), permitindo gestão modular e auditável.",
+                        interviewQuestions: [
+                            { question: "O que é um grupo secundário?", answer: "Atribui permissões extras ao utilizador sem alterar o seu ownership padrão de ficheiros." }
+                        ]
+                    },
+                    {
+                        title: "Atividade 3: Permissões & Árvore",
+                        isCapstone: true,
+                        summary: "Manipulação de Ownership recursivo e bits octais (600, 777, 460) na estrutura Matematicas-RomarioJala.",
+                        keywords: [
+                            { name: "Octal 600", definition: "rw-------: Dono lê e escreve; ninguém mais acede." },
+                            { name: "Octal 460", definition: "r--rw----: Dono lê, Grupo lê/escreve, outros nada." },
+                            { name: "Tree -ugp", definition: "Listagem detalhada exibindo Utilizador, Grupo e Permissões." },
+                            { name: "chown -R", definition: "Altera proprietário e grupo recursivamente em diretórios e arquivos descendentes." },
+                            { name: "chgrp", definition: "Comando específico para alterar apenas o grupo associado ao arquivo/diretório." },
+                            { name: "chmod 777", definition: "Permissão ampla (world writable), útil só em demonstração controlada por risco de segurança." }
+                        ],
+                        quickRun: [
+                            {
+                                title: "Manual A3 - grupos e usuários",
+                                goal: "Executar PASSO 1 do manual da atividade 3.",
+                                command: "sudo groupadd grouplab81 && sudo groupadd grouplab82 && sudo useradd -m -g grouplab81 -G cdrom -s /bin/bash userlab81 && echo 'userlab81:lab123' | sudo chpasswd && sudo useradd -m -g grouplab82 -G sudo -s /bin/bash userlab82 && echo 'userlab82:lab123' | sudo chpasswd",
+                                explanation: "Sequência igual ao guia manual para criação de identidades do laboratório.",
+                                validation: "groups userlab81 && groups userlab82"
+                            },
+                            {
+                                title: "Manual A3 - estrutura de diretórios",
+                                goal: "Executar PASSO 2 do manual.",
+                                command: "mkdir -p /tmp/Matematicas-RomarioJala/{Capitulo1,Capitulo2,Capitulo3} && touch /tmp/Matematicas-RomarioJala/Capitulo2/{leccionX.txt,leccionY.txt,leccionZ.txt} && touch /tmp/Matematicas-RomarioJala/Capitulo3/{leccionA.txt,leccionB.txt,leccionC.txt}",
+                                explanation: "Criação da árvore e arquivos exatamente no caminho usado pelo manual.",
+                                validation: "ls -lR /tmp/Matematicas-RomarioJala"
+                            },
+                            {
+                                title: "Manual A3 - donos e permissões",
+                                goal: "Executar PASSO 3 do manual.",
+                                command: "sudo chown userlab81:grouplab81 /tmp/Matematicas-RomarioJala/Capitulo2 && sudo chown userlab81:grouplab81 /tmp/Matematicas-RomarioJala/Capitulo2/* && sudo chgrp grouplab82 /tmp/Matematicas-RomarioJala/Capitulo1 && chmod 600 /tmp/Matematicas-RomarioJala/Capitulo3/leccionA.txt && chmod 777 /tmp/Matematicas-RomarioJala/Capitulo3/leccionB.txt && chmod 460 /tmp/Matematicas-RomarioJala/Capitulo3/leccionC.txt",
+                                explanation: "Mesmo conjunto de comandos e valores (600/777/460) do guia manual.",
+                                validation: "ls -lR /tmp/Matematicas-RomarioJala"
+                            }
+                        ],
+                        technicalContent: `Cenário Prático:\n- Estrutura: /tmp/Matematicas-RomarioJala/Capitulo[1-3].\n- Capitulo 2: Propriedade de userlab81:grouplab81 (recursivo).\n- Capitulo 3: leccionA (600), leccionB (777), leccionC (460).`,
+                        practicalAspects: [
+                            "Uso de 'chown -R' para garantir que lições herdem o proprietário.",
+                            "Simulação de erro ao tentar editar leccionA como utilizador comum.",
+                            "Manipulação do grupo do Capitulo 1 para grouplab82 via chgrp."
+                        ],
+                        proTip: "Destaque que permissão 777 é um risco (World Writable) e foi usada apenas para demonstração educacional controlada.",
+                        interviewQuestions: [
+                            { question: "Como mudaria o dono sem mudar o grupo?", answer: "Utilizaria 'chown usuario: [ficheiro]'." }
+                        ]
+                    },
+                    {
+                        title: "Atividade 4: Storage NFS",
+                        isCapstone: true,
+                        summary: "Configuração de servidor NFS centralizado para exportar o Jala-drive para montagem remota.",
+                        keywords: [
+                            { name: "NFS Server", definition: "Exporta directórios locais via protocolo 2049." },
+                            { name: "nobody:nogroup", definition: "Ajuste de ownership em NFS para permitir acesso universal de clientes em labs." },
+                            { name: "Mount Point", definition: "Porta de entrada na máquina cliente (/mnt/nfs-drive) para o disco remoto." },
+                            { name: "/etc/exports", definition: "Arquivo de configuração que define quais diretórios NFS serão exportados e com quais opções." },
+                            { name: "showmount -e", definition: "Comando no cliente para listar exportações NFS disponíveis no servidor." },
+                            { name: "exportfs", definition: "Comando para aplicar e validar exportações NFS carregadas pelo servidor." }
+                        ],
+                        quickRun: [
+                            {
+                                title: "Manual A4 Servidor - instalar NFS",
+                                goal: "Executar PASSO 1 do `atividade_4_servidor.sh -m`.",
+                                command: "sudo apt install nfs-kernel-server -y",
+                                explanation: "Comando idêntico ao guia manual do lado servidor.",
+                                validation: "systemctl status nfs-kernel-server"
+                            },
+                            {
+                                title: "Manual A4 Servidor - preparar diretórios",
+                                goal: "Executar PASSO 2 do manual servidor.",
+                                command: "sudo mkdir -p /nfs/Jala-drive /nfs/installers && sudo chown nobody:nogroup /nfs/Jala-drive /nfs/installers && sudo chmod 777 /nfs/Jala-drive /nfs/installers",
+                                explanation: "Replica o bloco de criação/ownership/permissão do script manual.",
+                                validation: "ls -ld /nfs/Jala-drive /nfs/installers"
+                            },
+                            {
+                                title: "Manual A4 Servidor - exportar e liberar firewall",
+                                goal: "Executar PASSOS 3 e 4 do manual servidor.",
+                                command: "echo '/nfs/Jala-drive *(rw,sync,no_subtree_check)' | sudo tee -a /etc/exports && echo '/nfs/installers *(rw,sync,no_subtree_check)' | sudo tee -a /etc/exports && sudo exportfs -ra && sudo systemctl restart nfs-kernel-server && sudo ufw allow nfs",
+                                explanation: "Usa os mesmos comandos do guia manual para exportar e abrir NFS.",
+                                validation: "sudo exportfs -v && sudo ufw status"
+                            },
+                            {
+                                title: "Manual A4 Cliente - instalar e montar",
+                                goal: "Executar PASSOS 1 a 3 do `atividade_4_cliente.sh -m`.",
+                                command: "sudo apt install nfs-common -y && sudo mkdir -p /mnt/nfs-drive /mnt/nfs-installers && sudo mount -t nfs 10.0.0.102:/nfs/Jala-drive /mnt/nfs-drive && sudo mount -t nfs 10.0.0.102:/nfs/installers /mnt/nfs-installers",
+                                explanation: "Comandos iguais ao manual do cliente; troque IP se o servidor estiver em outro endereço.",
+                                validation: "df -h | grep nfs"
+                            },
+                            {
+                                title: "Manual A4 Cliente - teste de escrita",
+                                goal: "Executar PASSO 4 do manual cliente.",
+                                command: "echo 'Teste NFS OK' > /mnt/nfs-drive/teste.txt",
+                                explanation: "Mesma validação do guia para comprovar escrita no compartilhamento.",
+                                validation: "ls -l /mnt/nfs-drive/teste.txt"
+                            }
+                        ],
+                        technicalContent: `Pipeline NFS:\n- Server: nfs-kernel-server exportando /nfs/Jala-drive e /nfs/installers.\n- Cliente: Montagem via 'mount -t nfs [IP]:/pasta'.\n- Verificação: 'df -h' e teste de escrita cruzada.`,
+                        practicalAspects: [
+                            "Garantia de que a porta 2049 está aberta no firewall entre as VMs.",
+                            "Uso de 'showmount -e' no cliente para visualizar exportações disponíveis.",
+                            "Configuração persistente via /etc/fstab (opcional)."
+                        ],
+                        proTip: "O NFS é vital em clusters web para partilhar assets estáticos (imagens/PDFs) entre múltiplos servidores front-end.",
+                        interviewQuestions: [
+                            { question: "O que acontece se o IP do servidor mudar?", answer: "A montagem falhará. Em produção, usa-se nomes de host via DNS interno." }
+                        ]
+                    },
+                    {
+                        title: "Atividade 5: Docker & Nginx",
+                        isCapstone: true,
+                        summary: "Deploy do Nginx em container com página customizada e exposição do serviço na porta 9090.",
+                        keywords: [
+                            { name: "Container", definition: "Unidade isolada de execução com aplicação e dependências empacotadas." },
+                            { name: "Port Mapping", definition: "Relação entre porta do host e porta interna do container (ex: 9090:80)." },
+                            { name: "Bind Mount", definition: "Montagem de arquivo/pasta do host dentro do container em tempo real." },
+                            { name: "nginx:latest", definition: "Imagem oficial do Nginx usada para subir servidor HTTP rapidamente em laboratório." },
+                            { name: "docker run -d", definition: "Execução de container em segundo plano (detached mode)." },
+                            { name: "docker ps", definition: "Listagem de containers em execução para validação operacional." }
+                        ],
+                        quickRun: [
+                            {
+                                title: "Manual A5 - instalar Docker",
+                                goal: "Executar primeiro comando do guia manual da atividade 5.",
+                                command: "sudo apt install docker.io -y",
+                                explanation: "Comando igual ao modo manual para instalar o motor Docker.",
+                                validation: "docker --version"
+                            },
+                            {
+                                title: "Manual A5 - liberar admin no grupo docker",
+                                goal: "Executar segundo comando do guia.",
+                                command: "sudo usermod -aG docker admin",
+                                explanation: "Mesmo comando do manual para permitir docker sem sudo após novo login.",
+                                validation: "groups admin"
+                            },
+                            {
+                                title: "Manual A5 - baixar imagem e criar index",
+                                goal: "Executar os comandos centrais de conteúdo web.",
+                                command: "docker pull nginx:latest && echo \"...html...\" > index.html",
+                                explanation: "Replica o guia: baixar imagem e gerar página personalizada no diretório atual.",
+                                validation: "ls -l index.html && docker images | grep nginx"
+                            },
+                            {
+                                title: "Manual A5 - subir container",
+                                goal: "Executar comando final do manual.",
+                                command: "docker run -d -p 9090:80 --name web-capstone -v $(pwd)/index.html:/usr/share/nginx/html/index.html nginx:latest",
+                                explanation: "Comando idêntico ao guia para publicar a página customizada.",
+                                validation: "docker ps | grep web-capstone"
+                            }
+                        ],
+                        technicalContent: `Fluxo da Atividade:\n- Instalação do Docker e habilitação do serviço.\n- Download da imagem nginx:latest.\n- Execução: docker run -d -p 9090:80 --name web-capstone -v /tmp/index.html:/usr/share/nginx/html/index.html nginx:latest.\n- Validação com docker ps e acesso HTTP na porta 9090.`,
+                        practicalAspects: [
+                            "Adição do usuário admin ao grupo docker para operar sem sudo após novo login.",
+                            "Substituição da página default por arquivo personalizado montado via volume.",
+                            "Liberação da porta 9090 no firewall para acesso externo."
+                        ],
+                        proTip: "Mapeamento de porta e volume são dois conceitos-base de Docker que caem frequentemente em entrevistas práticas.",
+                        interviewQuestions: [
+                            { question: "Qual a diferença entre imagem e container?", answer: "Imagem é o blueprint imutável; container é a instância em execução dessa imagem." }
+                        ]
+                    },
+                    {
+                        title: "Atividade 6: MySQL com Docker Compose",
+                        isCapstone: true,
+                        summary: "Banco MySQL em Compose com script de inicialização, variáveis de ambiente e porta 3366.",
+                        keywords: [
+                            { name: "Docker Compose", definition: "Orquestra múltiplos parâmetros de containers por arquivo YAML declarativo." },
+                            { name: "initdb.d", definition: "Diretório especial do MySQL para executar scripts SQL no primeiro boot." },
+                            { name: "Variáveis de Ambiente", definition: "Forma padronizada de parametrizar senha, banco e portas sem hardcode." },
+                            { name: "3366:3306", definition: "Mapeamento de porta MySQL com acesso externo controlado sem expor a porta padrão no host." },
+                            { name: "init.sql", definition: "Script SQL de bootstrap para criar banco/tabela e popular dados iniciais." },
+                            { name: "MYSQL_ROOT_PASSWORD", definition: "Variável usada pelo entrypoint do MySQL para inicializar credencial de administrador." }
+                        ],
+                        quickRun: [
+                            {
+                                title: "Manual A6 - instalar plugin Compose",
+                                goal: "Executar PASSO 1 do guia manual.",
+                                command: "sudo apt install docker-compose-v2 -y",
+                                explanation: "Mesmo comando do modo manual para habilitar `docker compose`.",
+                                validation: "docker compose version"
+                            },
+                            {
+                                title: "Manual A6 - criar pasta do projeto",
+                                goal: "Executar PASSO 2 do manual.",
+                                command: "mkdir -p ~/mysql-project && cd ~/mysql-project",
+                                explanation: "Comando igual ao guia para isolar `init.sql` e `docker-compose.yml`.",
+                                validation: "pwd | grep mysql-project"
+                            },
+                            {
+                                title: "Manual A6 - criar init.sql",
+                                goal: "Executar PASSO 3 como no manual.",
+                                command: "cat > init.sql << 'EOF'\nCREATE DATABASE IF NOT EXISTS capstone_db;\nUSE capstone_db;\nCREATE TABLE alunos (id INT AUTO_INCREMENT PRIMARY KEY, nome VARCHAR(50), sobrenome VARCHAR(50), idade INT);\nINSERT INTO alunos VALUES (1,'Romario','Galdino',25);\nEOF",
+                                explanation: "Conteúdo e formato do comando iguais ao bloco manual da atividade 6.",
+                                validation: "cat init.sql"
+                            },
+                            {
+                                title: "Manual A6 - criar docker-compose.yml",
+                                goal: "Executar PASSO 4 com os parâmetros cobrados.",
+                                command: "cat > docker-compose.yml << 'EOF'\nservices:\n  db:\n    image: mysql:8.0\n    container_name: mysql-capstone\n    environment:\n      MYSQL_ROOT_PASSWORD: 'root-password-123'\n      MYSQL_DATABASE: 'capstone_db'\n    ports:\n      - '3366:3306'\n    volumes:\n      - ./init.sql:/docker-entrypoint-initdb.d/init.sql\nEOF",
+                                explanation: "Mesmo esqueleto apresentado no manual da atividade 6.",
+                                validation: "cat docker-compose.yml"
+                            },
+                            {
+                                title: "Manual A6 - subir container",
+                                goal: "Executar PASSO 5 do manual.",
+                                command: "sudo docker compose up -d",
+                                explanation: "Comando final do guia para iniciar o MySQL em background.",
+                                validation: "sudo docker ps | grep mysql-capstone"
+                            }
+                        ],
+                        technicalContent: `Pipeline:\n- Estrutura com init.sql e docker-compose.yml.\n- Serviço db com MYSQL_ROOT_PASSWORD e MYSQL_DATABASE.\n- Exposição de porta externa 3366 para 3306 interna.\n- Seed automático da tabela alunos no primeiro arranque.`,
+                        practicalAspects: [
+                            "Validação de readiness com loop de tentativa de conexão SQL.",
+                            "Consulta em tabela alunos para comprovar execução do init.sql.",
+                            "Persistência de configuração via arquivo compose versionado."
+                        ],
+                        proTip: "Compose reduz erro manual e torna o ambiente repetível: um comando sobe tudo com os mesmos parâmetros.",
+                        interviewQuestions: [
+                            { question: "Por que usar .env no Compose?", answer: "Para separar configuração sensível do arquivo principal e facilitar promoção entre ambientes." }
+                        ]
+                    },
+                    {
+                        title: "Atividade 7: Stack Docker Compose",
+                        isCapstone: true,
+                        summary: "Orquestração MySQL + PHP + Nginx em rede isolada com volumes externos e ficheiro .env.",
+                        keywords: [
+                            { name: "Isolated Network", definition: "Rede privada 'capstone-net' onde containers comunicam pelo nome do serviço." },
+                            { name: "initdb.d", definition: "Directório do MySQL que executa scripts .sql automáticos no primeiro arranque." },
+                            { name: "Bind Mount", definition: "Mapeamento em tempo real de ficheiros do host para o container via volumes." },
+                            { name: ".env", definition: "Arquivo externo com variáveis de configuração para desacoplar senha, usuário e portas." },
+                            { name: "env_file", definition: "Diretiva do Compose que injeta variáveis do arquivo .env nos serviços." },
+                            { name: "PDO", definition: "Camada de acesso a dados no PHP usada para conectar de forma segura ao MySQL." },
+                            { name: "bridge network", definition: "Driver de rede local do Docker que isola serviços e permite DNS interno por nome." },
+                            { name: "Volumes Externos", definition: "Persistência de dados em diretórios do host, preservando estado além do ciclo de vida do container." }
+                        ],
+                        quickRun: [
+                            {
+                                title: "Manual A7 - instalar dependências",
+                                goal: "Executar PASSO 1 do guia manual da atividade 7.",
+                                command: "sudo apt install docker.io docker-compose-v2 -y && sudo usermod -aG docker admin",
+                                explanation: "Mesmos comandos do manual para Docker + Compose + grupo docker.",
+                                validation: "docker --version && docker compose version"
+                            },
+                            {
+                                title: "Manual A7 - criar estrutura de diretórios",
+                                goal: "Executar PASSO 2 do manual.",
+                                command: "mkdir -p ~/capstone-stack/{html,php,db-data} && cd ~/capstone-stack",
+                                explanation: "Estrutura idêntica à pedida no guia para volumes externos.",
+                                validation: "ls -la ~/capstone-stack"
+                            },
+                            {
+                                title: "Manual A7 - criar .env",
+                                goal: "Executar PASSO 3 do manual.",
+                                command: "cat > .env << 'EOF'\nMYSQL_ROOT_PASSWORD=root-capstone-123\nMYSQL_DATABASE=capstone_app\nMYSQL_USER=capstone_user\nMYSQL_PASSWORD=capstone_pass_456\nNGINX_PORT=8080\nEOF",
+                                explanation: "Mesmo conteúdo mínimo exibido no modo manual.",
+                                validation: "cat .env"
+                            },
+                            {
+                                title: "Manual A7 - montar docker-compose.yml",
+                                goal: "Executar PASSO 4 (estrutura dos 3 serviços).",
+                                command: "cat > docker-compose.yml",
+                                explanation: "No manual, o passo 4 define a estrutura com `db`, `php`, `nginx`, `env_file`, rede `bridge` e volumes externos.",
+                                validation: "grep -E 'db:|php:|nginx:' docker-compose.yml"
+                            },
+                            {
+                                title: "Manual A7 - subir stack",
+                                goal: "Executar PASSO 5 do manual.",
+                                command: "sudo docker compose --env-file .env up -d",
+                                explanation: "Comando final igual ao guia para subir a stack completa.",
+                                validation: "sudo docker ps --filter name=capstone"
+                            }
+                        ],
+                        technicalContent: `Stack Completa:\n- MySQL: Porta 3366, script SQL para criar DB e inserir alunos.\n- PHP: Backend conectando via PDO ao hostname 'db'.\n- Nginx: Frontend servindo portal na porta 8080.\n- Variáveis: .env para senhas root.`,
+                        practicalAspects: [
+                            "Automação: PHP lista dados persistidos no MySQL no primeiro arranque.",
+                            "Redundância: Volumes externos garantem que o banco de dados não se perde se apagar o container.",
+                            "Isolamento: O tráfego do banco de dados não sai para o host exterior (segurança)."
+                        ],
+                        proTip: "Containers garantem o 'Ambiente Imutável'. O que você validou no lab vai correr exatamente igual em qualquer cloud ou servidor.",
+                        interviewQuestions: [
+                            { question: "Como containers diferentes se falam?", answer: "Pelo DNS interno do Docker Compose; o PHP usa o nome do serviço 'db' em vez de IP." }
+                        ]
+                    },
+                    {
+                        title: "Lab S4: Active Directory",
+                        isCapstone: false,
+                        summary: "Domínio galdino.local no Windows Server com autenticação centralizada e DNS como backbone.",
+                        keywords: [
+                            { name: "AD DS", definition: "Gerenciamento centralizado de identidades e políticas corporativas." },
+                            { name: "DNS Preferencial", definition: "Configuração vital: o cliente deve apontar para o Domain Controller." },
+                            { name: "OU", definition: "Unidade Organizacional para segmentar usuários e aplicar políticas por escopo administrativo." },
+                            { name: "GPO", definition: "Group Policy Object para aplicar regras de segurança e configuração em massa no domínio." },
+                            { name: "Domain Join", definition: "Processo de ingresso do cliente no domínio para autenticação centralizada." }
+                        ],
+                        quickRun: [],
+                        technicalContent: `Setup AD:\n- Domínio: galdino.local.\n- OU: DEV criada para isolar utilizadores de projecto.\n- Login: Diferença entre conta local (.\\user) e domínio (GALDINO\\user).`,
+                        practicalAspects: [
+                            "DNS como backbone: se o join falhar, a primeira verificação é o resolvedor do cliente.",
+                            "Teste de conectividade bidirecional via ping antes do ingresso."
+                        ],
+                        proTip: "O AD permite a aplicação de GPOs granulares por Unidade Organizacional, controlando a segurança de toda a empresa.",
+                        interviewQuestions: [
+                            { question: "O que é uma Unidade Organizacional?", answer: "É um contentor lógico usado para agrupar objectos e delegar administração." }
+                        ]
+                    }
+                ]);
+
+                const theoryConcepts = computed(() => {
+                    const conceptMap = new Map();
+
+                    labs.value.forEach((lab) => {
+                        lab.keywords.forEach((keyword) => {
+                            const key = keyword.name.toLowerCase();
+                            if (!conceptMap.has(key)) {
+                                conceptMap.set(key, {
+                                    name: keyword.name,
+                                    definition: keyword.definition,
+                                    labs: [lab.title],
+                                    count: 1
+                                });
+                                return;
+                            }
+
+                            const existing = conceptMap.get(key);
+                            if (!existing.labs.includes(lab.title)) {
+                                existing.labs.push(lab.title);
+                            }
+                            existing.count += 1;
+                        });
+                    });
+
+                    return Array.from(conceptMap.values()).sort((a, b) => a.name.localeCompare(b.name, 'pt-BR'));
+                });
+
+                const filteredLabs = computed(() => {
+                    const term = searchTerm.value.toLowerCase();
+                    if (!term) return labs.value;
+                    return labs.value.filter(lab => 
+                        lab.title.toLowerCase().includes(term) || 
+                        lab.summary.toLowerCase().includes(term) ||
+                        lab.keywords.some(k => 
+                            k.name.toLowerCase().includes(term) ||
+                            k.definition.toLowerCase().includes(term)
+                        )
+                    );
+                });
+
+                const openConcept = (concept) => {
+                    selectedConcept.value = concept;
+                    selectedLab.value = null;
+                    showPanicMode.value = false;
+                    searchTerm.value = concept.name;
+                    window.scrollTo(0, 0);
+                };
+
+                const openLabByTitle = (title) => {
+                    const targetLab = labs.value.find(lab => lab.title === title);
+                    if (!targetLab) return;
+                    selectLab(targetLab);
+                };
+
+                const selectLab = (lab) => {
+                    selectedLab.value = lab;
+                    selectedConcept.value = null;
+                    showPanicMode.value = false;
+                    expandedStep.value = 0;
+                    window.scrollTo(0, 0);
+                    nextTick(() => {
+                        lucide.createIcons();
+                    });
+                };
+
+                const resetState = () => {
+                    selectedLab.value = null;
+                    selectedConcept.value = null;
+                    searchTerm.value = '';
+                    showPanicMode.value = false;
+                    expandedStep.value = 0;
+                    nextTick(() => {
+                        lucide.createIcons();
+                    });
+                };
+
+                const toggleStep = (idx) => {
+                    expandedStep.value = expandedStep.value === idx ? -1 : idx;
+                    nextTick(() => {
+                        lucide.createIcons();
+                    });
+                };
+
+                const copyCommand = async (command) => {
+                    if (!navigator.clipboard || !navigator.clipboard.writeText) return;
+                    try {
+                        await navigator.clipboard.writeText(command);
+                    } catch (_error) {
+                        // Clipboard can fail on insecure origins.
+                    }
+                };
+
+                nextTick(() => {
+                    lucide.createIcons();
+                });
+
+                return {
+                    labs,
+                    searchTerm,
+                    selectedLab,
+                    selectedConcept,
+                    expandedStep,
+                    filteredLabs,
+                    theoryConcepts,
+                    selectLab,
+                    openConcept,
+                    openLabByTitle,
+                    toggleStep,
+                    copyCommand,
+                    showPanicMode,
+                    resetState
+                };
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>
