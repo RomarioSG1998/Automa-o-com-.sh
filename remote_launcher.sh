@@ -11,6 +11,24 @@ YELLOW='\033[1;33m'
 RED='\033[0;31m'
 NC='\033[0m'
 
+# ==============================================================================
+# ⚠️  CONFIGURAÇÃO OBRIGATÓRIA — ADAPTE ANTES DE USAR!
+# Preencha abaixo com os dados das SUAS máquinas virtuais.
+# Sem isso o script não vai funcionar corretamente.
+# ==============================================================================
+
+# --- VM 1: Servidor NFS ---
+SERVOR_IP="10.0.0.X"           # ← Troque pelo IP real do seu servidor
+SERVOR_USUARIO="seu-usuario"   # ← Troque pelo seu nome de usuário
+SERVOR_PORTA="2244"            # ← Porta SSH configurada na Atividade 1
+
+# --- VM 2: Cliente NFS ---
+CLIENTE_IP="10.0.0.Y"                    # ← Troque pelo IP real do cliente
+CLIENTE_USUARIO="seu-usuario-cliente"    # ← Troque pelo usuário da VM cliente
+CLIENTE_PORTA="22"                       # ← Porta SSH da VM cliente
+
+# ==============================================================================
+
 clear
 echo -e "${BLUE}======================================================================"
 echo -e "           LANÇADOR DE AUTOMAÇÃO REMOTA - CAPSTONE"
@@ -24,15 +42,15 @@ read -p "Escolha a VM [1]: " VM_CHOICE
 VM_CHOICE=${VM_CHOICE:-1}
 
 if [[ "$VM_CHOICE" == "2" ]]; then
-    VM_IP="10.0.0.127"
-    VM_USER="rgaldino_capstone_cliente"
-    VM_PORT="22"
-    echo -e "${BLUE}>>> Alvo definido: CLIENTE NFS (10.0.0.127)${NC}"
+    VM_IP="$CLIENTE_IP"
+    VM_USER="$CLIENTE_USUARIO"
+    VM_PORT="$CLIENTE_PORTA"
+    echo -e "${BLUE}>>> Alvo definido: CLIENTE NFS ($CLIENTE_IP)${NC}"
 else
-    VM_IP="10.0.0.102"
-    VM_USER="rgaldino"
-    VM_PORT="2244"
-    echo -e "${BLUE}>>> Alvo definido: SERVIDOR NFS (Original - 10.0.0.102)${NC}"
+    VM_IP="$SERVOR_IP"
+    VM_USER="$SERVOR_USUARIO"
+    VM_PORT="$SERVOR_PORTA"
+    echo -e "${BLUE}>>> Alvo definido: SERVIDOR NFS ($SERVOR_IP)${NC}"
 fi
 
 echo -e "\n${YELLOW}=== O QUE DESEJA FAZER? ===${NC}"
